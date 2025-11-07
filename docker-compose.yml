@@ -1,0 +1,47 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: clickhouse
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: analytics
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      TZ: UTC
+    volumes:
+      - ./docker/clickhouse-init:/docker-entrypoint-initdb.d
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --query='SELECT 1' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - debridge-net
+
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: debridge-app
+    restart: no
+    env_file: .env
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: ["npm", "run", "dev"]
+    networks:
+      - debridge-net
+
+networks:
+  debridge-net:
+    external: true
+
+volumes:
+  clickhouse_data:

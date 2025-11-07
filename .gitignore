@@ -1,4 +1,3 @@
-# Node / TypeScript
 node_modules
 dist
 out-tsc
@@ -6,25 +5,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment
 .env
 .env.local
 .env.*.local
 
-# IDE
 .vscode/*
 .idea/*
 .DS_Store
 
-# Docker / Data volumes
 docker/data/
 docker/logs/
 clickhouse_data/
 temporal_data/
 
-# Output
 output/*.json
-output/*.csv
 
-# Misc
 *.tmp

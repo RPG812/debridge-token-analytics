@@ -1,14 +1,22 @@
 {
-  "name": "${PROJECT_NAME}",
+  "name": "debridge-usdc-gas-analytics",
   "version": "1.0.0",
-  "description": "",
+  "description": "Blockchain analytics pipeline for USDC gas metrics",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "docker:up": "make up",
+    "docker:down": "make down",
+    "docker:clean": "make clean",
+    "docker:logs": "make logs"
   },
-  "dependencies": {},
   "devDependencies": {
-    "typescript": "^5.5.3"
+    "@types/node": "^24.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
-  "private": true
+  "private": true,
+  "license": "MIT"
 }
