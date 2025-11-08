@@ -21,3 +21,6 @@ temporal_data/
 output/*.json
 
 *.tmp
+
+/coverage
+/.jest-cache
