@@ -1,7 +1,7 @@
 {
-  "name": "debridge-usdc-gas-analytics",
+  "name": "debridge-token-analytics",
   "version": "1.0.0",
-  "description": "Blockchain analytics pipeline for USDC gas metrics",
+  "description": "Blockchain analytics pipeline for ERC-20 token gas metrics",
   "main": "dist/index.js",
   "scripts": {
     "dev": "node --loader ts-node/esm --no-warnings src/index.ts",

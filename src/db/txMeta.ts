@@ -49,7 +49,7 @@ export async function getMissingTxHashes(limit = 1000): Promise<string[]> {
 
     try {
         const res = await clickhouse.query({ query, format: 'JSONEachRow' })
-        const rows = await res.json<MissingTxRow[]>()
+        const rows = (await res.json()) as MissingTxRow[]
 
         if (rows.length === 0) return []
 

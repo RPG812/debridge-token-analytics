@@ -76,6 +76,7 @@ export async function selectSummary(): Promise<PipelineSummary> {
             max(block_number) AS end_block
         FROM raw_events
     `
+
     // language=ClickHouse
     const periodQuery = `
         SELECT
@@ -90,8 +91,8 @@ export async function selectSummary(): Promise<PipelineSummary> {
             clickhouse.query({ query: periodQuery, format: 'JSONEachRow' })
         ])
 
-        const eventsRows = await eventsRes.json<EventsSummaryRow[]>()
-        const periodRows = await periodRes.json<PeriodSummaryRow[]>()
+        const eventsRows = (await eventsRes.json()) as EventsSummaryRow[]
+        const periodRows = (await periodRes.json()) as PeriodSummaryRow[]
 
         const events = eventsRows[0] ?? { events_collected: 0, start_block: null, end_block: null }
         const period = periodRows[0] ?? { start_date: null, end_date: null }

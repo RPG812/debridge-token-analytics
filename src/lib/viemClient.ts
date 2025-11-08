@@ -5,16 +5,15 @@ import { withRetry } from './retry.js'
 import { logError } from './logger.js'
 
 if (!config.rpcUrl) throw new Error('RPC_URL is required')
-if (!config.contract) throw new Error('USDC contract address is required')
+if (!config.token?.contract) throw new Error('ERC-20 contract address is required')
 
-// ERC-20 Transfer event
-export const usdcTransferEvent = parseAbiItem(
+export const transferEvent = parseAbiItem(
     'event Transfer(address indexed from, address indexed to, uint256 value)'
 )
 
 export const publicClient = createPublicClient({
     chain: mainnet,
-    transport: http(config.rpcUrl, { retryCount: 0 }) // disable viem retries
+    transport: http(config.rpcUrl, { retryCount: 0 }) // we handle retries ourselves
 })
 
 export type BlockRange = {
@@ -22,19 +21,19 @@ export type BlockRange = {
     toBlock: bigint
 }
 
-// Fetch USDC Transfer logs in a block range
-export async function getUsdcTransferLogs(range: BlockRange) {
+// Fetch ERC-20 Transfer logs in a given block range
+export async function getTransferLogs(range: BlockRange) {
     try {
         return await withRetry(() =>
             publicClient.getLogs({
-                address: config.contract as `0x${string}`,
-                event: usdcTransferEvent,
+                address: config.token.contract as `0x${string}`,
+                event: transferEvent,
                 fromBlock: range.fromBlock,
                 toBlock: range.toBlock
             })
         )
     } catch (error) {
-        logError(`getUsdcTransferLogs failed after retries for [${range.fromBlock} - ${range.toBlock}]`, error)
+        logError(`getTransferLogs failed after retries for [${range.fromBlock} - ${range.toBlock}]`, error)
         throw error
     }
 }

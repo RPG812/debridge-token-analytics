@@ -9,6 +9,12 @@ export const config = {
     batchSize: Number(process.env.BATCH_SIZE || 100),
     rpcConcurrency: Number(process.env.RPC_CONCURRENCY || 5),
 
+    token: {
+        symbol: process.env.TOKEN_SYMBOL || 'USDC',
+        decimals: Number(process.env.TOKEN_DECIMALS || 6),
+        contract: process.env.CONTRACT || ''
+    },
+
     clickhouse: (() => {
         const protocol = process.env.CLICKHOUSE_PROTOCOL || 'http'
         const host = process.env.CLICKHOUSE_HOST || 'localhost'
