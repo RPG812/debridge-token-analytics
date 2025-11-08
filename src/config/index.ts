@@ -7,6 +7,7 @@ export const config = {
     contract: process.env.CONTRACT || '',
     blockStep: Number(process.env.BLOCK_STEP || 5000),
     batchSize: Number(process.env.BATCH_SIZE || 100),
+    rpcConcurrency: Number(process.env.RPC_CONCURRENCY || 5),
 
     clickhouse: (() => {
         const protocol = process.env.CLICKHOUSE_PROTOCOL || 'http'

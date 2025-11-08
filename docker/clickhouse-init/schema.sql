@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS raw_events
+USE analytics;
+
+CREATE TABLE IF NOT EXISTS analytics.raw_events
 (
     tx_hash FixedString(66),
     log_index UInt32,
@@ -11,10 +13,11 @@ CREATE TABLE IF NOT EXISTS raw_events
 )
     ENGINE = ReplacingMergeTree(_ingested_at)
         PARTITION BY toYYYYMM(block_time)
-        ORDER BY (from_address, to_address, tx_hash, log_index)
+        ORDER BY (tx_hash, log_index)
+        TTL _ingested_at + INTERVAL 180 DAY DELETE
         SETTINGS index_granularity = 8192;
 
-CREATE TABLE IF NOT EXISTS tx_meta
+CREATE TABLE IF NOT EXISTS analytics.tx_meta
 (
     tx_hash FixedString(66),
     block_number UInt32,
@@ -26,9 +29,10 @@ CREATE TABLE IF NOT EXISTS tx_meta
     ENGINE = ReplacingMergeTree(_ingested_at)
         PARTITION BY toYYYYMM(block_time)
         ORDER BY (tx_hash)
+        TTL _ingested_at + INTERVAL 180 DAY DELETE
         SETTINGS index_granularity = 8192;
 
-CREATE TABLE IF NOT EXISTS daily_metrics
+CREATE TABLE IF NOT EXISTS analytics.daily_metrics
 (
     date Date,
     gas_cost_wei UInt256,
@@ -41,4 +45,5 @@ CREATE TABLE IF NOT EXISTS daily_metrics
     ENGINE = ReplacingMergeTree(_ingested_at)
         PARTITION BY toYYYYMM(date)
         ORDER BY (date)
+        TTL _ingested_at + INTERVAL 180 DAY DELETE
         SETTINGS index_granularity = 8192;
