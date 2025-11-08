@@ -4,19 +4,28 @@
   "description": "Blockchain analytics pipeline for USDC gas metrics",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
+    "dev": "node --loader ts-node/esm --no-warnings src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "docker:up": "make up",
     "docker:down": "make down",
+    "docker:logs": "make logs",
+    "docker:rebuild": "make rebuild",
+    "docker:restart": "make restart",
     "docker:clean": "make clean",
-    "docker:logs": "make logs"
+    "lint": "eslint . --ext .ts --max-warnings=0",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
+  "type": "module",
   "private": true,
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@clickhouse/client": "^1.12.1",
+    "dotenv": "^17.2.3"
+  }
 }
