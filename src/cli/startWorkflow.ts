@@ -1,19 +1,23 @@
 import { Connection, WorkflowClient } from '@temporalio/client'
-import { analyticsWorkflow } from '../workflows/analyticsWorkflow.js'
 import { config } from '../config/index.js'
 import { log } from '../lib/logger.js'
 
 async function startWorkflow() {
+    log(`Starting workflow...`)
+
     const connection = await Connection.connect({
         address: config.temporal.address
     })
 
-    const client = new WorkflowClient({ connection })
-    const workflowId = `analytics-${config.token.symbol.toLowerCase()}-run-1`
+    log(`Connected to Temporal at ${config.temporal.address}`)
 
-    const handle = await client.start(analyticsWorkflow, {
+    const client = new WorkflowClient({ connection })
+    const workflowId = `analytics-${config.token.symbol.toLowerCase()}`
+
+    const handle = await client.start('analyticsWorkflow', {
         taskQueue: config.temporal.taskQueue,
-        workflowId
+        workflowId,
+        workflowIdReusePolicy: 'ALLOW_DUPLICATE_FAILED_ONLY'
     })
 
     log(`Workflow started: ${handle.workflowId}`)

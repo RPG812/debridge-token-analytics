@@ -1,3 +1,5 @@
+import {sleep} from "./sleep.js";
+
 /**
  * Executes an async function with exponential backoff and optional jitter.
  * Intended for unstable operations (e.g. RPC, DB, API calls).
@@ -19,11 +21,11 @@ export async function withRetry<T>(
     for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
             return await fn()
-        } catch (err) {
-            lastError = err
+        } catch (error) {
+            lastError = error
 
             if (onError) {
-                onError(err, attempt)
+                onError(error, attempt)
             }
 
             if (attempt === attempts) break
@@ -54,6 +56,3 @@ export type RetryOptions = {
     maxDelayMs?: number
     jitter?: boolean
 }
-
-const sleep = (ms: number) =>
-    new Promise(resolve => setTimeout(resolve, ms))

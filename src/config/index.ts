@@ -4,7 +4,8 @@ dotenv.config()
 export const config = {
     rpcUrl: process.env.RPC_URL || '',
     address: process.env.ADDRESS || '',
-    blockStep: Number(process.env.BLOCK_STEP || 5000),
+    targetEvents: Number(process.env.TARGET_EVENTS || 5000),
+    blockStep: Number(process.env.BLOCK_STEP || 100),
     batchSize: Number(process.env.BATCH_SIZE || 100),
     rpcConcurrency: Number(process.env.RPC_CONCURRENCY || 5),
 

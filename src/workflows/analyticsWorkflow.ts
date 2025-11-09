@@ -1,11 +1,11 @@
-import { config } from '../config/index.js'
 import { proxyActivities } from '@temporalio/workflow'
 import type * as activities from '../activities/index.js'
 
+// TODO
 const { collectTransfers, enrichWithReceipts, computeMetrics, exportJson } =
     proxyActivities<typeof activities>({
-        scheduleToCloseTimeout: config.temporal.activityTimeout,
-        retry: config.temporal.retry
+        scheduleToCloseTimeout: '2 hours',
+        retry: { initialInterval: '2s', backoffCoefficient: 2.0, maximumAttempts: 5 }
     })
 
 export async function analyticsWorkflow(): Promise<void> {

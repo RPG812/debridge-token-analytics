@@ -1,5 +1,5 @@
 import { clickhouse } from '../lib/clickhouse.js'
-import { log, logError } from '../lib/logger.js'
+import { logError } from '../lib/logger.js'
 
 export type TransferEvent = {
     txHash: string
@@ -42,10 +42,7 @@ export async function insertEvents(events: TransferEvent[]): Promise<void> {
             values: rows,
             format: 'JSONEachRow'
         })
-
-        log(`Inserted ${rows.length} raw_events`)
     } catch (error) {
-        logError('Failed to insert raw_events batch', error)
         throw error
     }
 }

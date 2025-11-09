@@ -48,7 +48,14 @@ export async function getTxReceipt(hash: Hash) {
     }
 }
 
-// Fetch block metadata
+export async function getLatestBlock() {
+    try {
+        return await withRetry(() => publicClient.getBlock())
+    } catch (error) {
+        logError(`getBlockByNumber failed after retries`, error)
+        throw error
+    }}
+
 export async function getBlockByNumber(blockNumber: bigint) {
     try {
         return await withRetry(() => publicClient.getBlock({ blockNumber }))
