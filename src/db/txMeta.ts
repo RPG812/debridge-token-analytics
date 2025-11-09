@@ -19,7 +19,7 @@ export async function insertMeta(batch: TxMeta[]): Promise<void> {
     const rows = batch.map(m => ({
         tx_hash: m.txHash,
         block_number: m.blockNumber,
-        block_time: m.blockTime,
+        block_time: m.blockTime.toISOString().slice(0, 19).replace('T', ' '),
         gas_used: Number(m.gasUsed),
         effective_gas_price: m.effectiveGasPrice.toString()
     }))
@@ -30,20 +30,18 @@ export async function insertMeta(batch: TxMeta[]): Promise<void> {
             values: rows,
             format: 'JSONEachRow'
         })
-
-        log(`Inserted ${rows.length} tx_meta rows`)
     } catch (error) {
         logError('Failed to insert tx_meta batch', error)
         throw error
     }
 }
 
-export async function getMissingTxHashes(limit = 1000): Promise<string[]> {
+export async function getMissingTxHashes(limit = 100): Promise<string[]> {
     const query = `
         SELECT DISTINCT e.tx_hash
         FROM raw_events AS e
         LEFT JOIN tx_meta AS m ON e.tx_hash = m.tx_hash
-        WHERE m.tx_hash IS NULL
+        WHERE m.tx_hash IS NULL OR m.tx_hash = ''
         LIMIT ${limit}
     `
 

@@ -1,5 +1,6 @@
 import { log } from '../lib/logger.js'
 import { collectTransfersActivity } from './collectTransfers.js'
+import {enrichWithReceiptsActivity} from "./enrichWithReceipts.js"
 
 export async function collectTransfers(): Promise<void> {
     log('[Activity] collectTransfers() started')
@@ -8,7 +9,9 @@ export async function collectTransfers(): Promise<void> {
 }
 
 export async function enrichWithReceipts(): Promise<void> {
-    log('[Activity] enrichWithReceipts() called')
+    log('[Activity] enrichWithReceipts() started')
+    await enrichWithReceiptsActivity()
+    log('[Activity] enrichWithReceipts() finished')
 }
 
 export async function computeMetrics(): Promise<void> {

@@ -21,7 +21,7 @@ export type BlockRange = {
     toBlock: bigint
 }
 
-// Fetch ERC-20 Transfer logs in a given block range
+/** Fetch ERC-20 Transfer logs in a given block range */
 export async function getTransferLogs(range: BlockRange) {
     try {
         return await withRetry(() =>
@@ -38,7 +38,6 @@ export async function getTransferLogs(range: BlockRange) {
     }
 }
 
-// Fetch transaction receipt
 export async function getTxReceipt(hash: Hash) {
     try {
         return await withRetry(() => publicClient.getTransactionReceipt({ hash }))

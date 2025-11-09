@@ -96,7 +96,7 @@ class TransferCollector {
 
             logMetric('total', this.collected)
 
-            await sleep(500)
+            await sleep(300)
 
             if (this.collected >= this.params.remaining) break
         }

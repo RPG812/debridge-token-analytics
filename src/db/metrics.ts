@@ -29,7 +29,7 @@ type PeriodSummaryRow = {
     end_date: string | null
 }
 
-// Truncate daily_metrics before recompute
+/** Truncate daily_metrics before recompute */
 export async function truncateDailyMetrics(): Promise<void> {
     try {
         await clickhouse.command({ query: 'TRUNCATE TABLE daily_metrics' })
@@ -40,7 +40,7 @@ export async function truncateDailyMetrics(): Promise<void> {
     }
 }
 
-// Insert aggregated metrics into daily_metrics
+/** Insert aggregated metrics into daily_metrics */
 export async function insertDailyMetrics(rows: DailyMetricRow[]): Promise<void> {
     if (rows.length === 0) return
 
@@ -67,7 +67,7 @@ export async function insertDailyMetrics(rows: DailyMetricRow[]): Promise<void> 
     }
 }
 
-// Collect summary info for analytics.json
+/** Collect summary info for analytics.json */
 export async function selectSummary(): Promise<PipelineSummary> {
     const eventsQuery = `
         SELECT

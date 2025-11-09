@@ -1,12 +1,12 @@
 USE analytics;
 
-CREATE TABLE IF NOT EXISTS analytics.raw_events
+CREATE TABLE IF NOT EXISTS raw_events
 (
-    tx_hash FixedString(66),
+    tx_hash String,
     log_index UInt32,
     block_number UInt32,
-    from_address FixedString(42),
-    to_address FixedString(42),
+    from_address String,
+    to_address String,
     value UInt256,
     block_time DateTime('UTC') DEFAULT toDateTime(0, 'UTC'),
     _ingested_at DateTime('UTC') DEFAULT now()
@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS analytics.raw_events
         TTL _ingested_at + INTERVAL 180 DAY DELETE
         SETTINGS index_granularity = 8192;
 
-CREATE TABLE IF NOT EXISTS analytics.tx_meta
+CREATE TABLE IF NOT EXISTS tx_meta
 (
-    tx_hash FixedString(66),
+    tx_hash String,
     block_number UInt32,
     block_time DateTime('UTC'),
     gas_used UInt64,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS analytics.tx_meta
         TTL _ingested_at + INTERVAL 180 DAY DELETE
         SETTINGS index_granularity = 8192;
 
-CREATE TABLE IF NOT EXISTS analytics.daily_metrics
+CREATE TABLE IF NOT EXISTS daily_metrics
 (
     date Date,
     gas_cost_wei UInt256,
