@@ -2,6 +2,7 @@ import { log } from '../lib/logger.js'
 import { collectTransfersActivity } from './collectTransfers.js'
 import {enrichWithReceiptsActivity} from "./enrichWithReceipts.js"
 import {computeMetricsActivity} from "./computeMetrics.js";
+import {exportJsonActivity} from "./exportJson.js";
 
 export async function collectTransfers(): Promise<void> {
     log('[Activity] collectTransfers() started')
@@ -22,5 +23,7 @@ export async function computeMetrics(): Promise<void> {
 }
 
 export async function exportJson(): Promise<void> {
-    log('[Activity] exportJson() called')
+    log('[Activity] exportJson() started')
+    await exportJsonActivity()
+    log('[Activity] exportJson() finished')
 }
