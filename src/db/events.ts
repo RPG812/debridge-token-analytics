@@ -48,6 +48,7 @@ export async function insertEvents(events: TransferEvent[]): Promise<void> {
 }
 
 export async function getProgress(): Promise<EventsProgress> {
+    // language=ClickHouse
     const query = `
         SELECT
             min(block_number) AS min_block,

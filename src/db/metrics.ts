@@ -40,29 +40,92 @@ export async function truncateDailyMetrics(): Promise<void> {
     }
 }
 
-/** Insert aggregated metrics into daily_metrics */
-export async function insertDailyMetrics(rows: DailyMetricRow[]): Promise<void> {
-    if (rows.length === 0) return
-
-    const values = rows.map(r => ({
-        date: r.date,
-        gas_cost_wei: r.gasCostWei,
-        gas_cost_eth: r.gasCostEth,
-        ma7_wei: r.ma7Wei,
-        ma7_gwei: r.ma7Gwei,
-        cumulative_gas_cost_eth: r.cumulativeGasCostEth
-    }))
+/**
+ * Aggregates per-day gas metrics and inserts them into ClickHouse.
+ * - Calculates total gas cost per UTC day (wei / ETH)
+ * - Computes 7-day moving average of effectiveGasPrice (MA7)
+ * - Computes cumulative gas cost over time
+ * Uses ClickHouse window functions for MA7 and cumulative sum.
+ */
+export async function computeAndInsertMetrics(): Promise<void> {
+    // language=ClickHouse
+    const query = `
+        INSERT INTO daily_metrics (
+            date,
+            gas_cost_wei,
+            gas_cost_eth,
+            ma7_wei,
+            ma7_gwei,
+            cumulative_gas_cost_eth
+        )
+        SELECT
+            date,
+            gas_cost_wei,
+            gas_cost_eth,
+            toUInt256(avg(avg_gas_price_wei) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)) AS ma7_wei,
+            (avg(avg_gas_price_wei) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)) / 1e9 AS ma7_gwei,
+            sum(gas_cost_eth) OVER (ORDER BY date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_gas_cost_eth
+        FROM (
+                 SELECT
+                     toDate(m.block_time) AS date,
+                     sum(toUInt256(m.gas_used) * m.effective_gas_price) AS gas_cost_wei,
+                     sum((toUInt256(m.gas_used) * m.effective_gas_price) / 1e18) AS gas_cost_eth,
+                     avg(m.effective_gas_price) AS avg_gas_price_wei
+                 FROM raw_events AS e
+                          INNER JOIN tx_meta AS m USING (tx_hash)
+                 GROUP BY date
+                 ) AS daily_base
+        ORDER BY date
+    `
 
     try {
-        await clickhouse.insert({
-            table: 'daily_metrics',
-            values,
-            format: 'JSONEachRow'
-        })
-
-        log(`Inserted ${values.length} daily_metrics rows`)
+        await clickhouse.command({ query })
+        log('[computeMetrics] Inserted aggregated metrics into daily_metrics')
     } catch (error) {
-        logError('Failed to insert daily_metrics batch', error)
+        logError('[computeMetrics] Failed to compute and insert daily metrics', error)
+        throw error
+    }
+}
+
+/**
+ * Selects daily metrics from ClickHouse for JSON export.
+ * Returns rows with stringified bigint fields for JSON compatibility.
+ */
+export async function selectDailyMetrics(): Promise<DailyMetricRow[]> {
+    // language=ClickHouse
+    const query = `
+        SELECT
+            toString(date) AS date,
+            toString(gas_cost_wei) AS gas_cost_wei,
+            gas_cost_eth,
+            toString(ma7_wei) AS ma7_wei,
+            ma7_gwei,
+            cumulative_gas_cost_eth
+        FROM daily_metrics
+        ORDER BY date
+    `
+
+    try {
+        const res = await clickhouse.query({ query, format: 'JSONEachRow' })
+        const rows = (await res.json()) as Array<{
+            date: string
+            gas_cost_wei: string
+            gas_cost_eth: number
+            ma7_wei: string
+            ma7_gwei: number
+            cumulative_gas_cost_eth: number
+        }>
+
+        return rows.map(r => ({
+            date: r.date,
+            gasCostWei: r.gas_cost_wei,
+            gasCostEth: r.gas_cost_eth,
+            ma7Wei: r.ma7_wei,
+            ma7Gwei: r.ma7_gwei,
+            cumulativeGasCostEth: r.cumulative_gas_cost_eth
+        }))
+    } catch (error) {
+        logError('Failed to select daily_metrics', error)
         throw error
     }
 }

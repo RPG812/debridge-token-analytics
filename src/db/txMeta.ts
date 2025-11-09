@@ -1,5 +1,5 @@
 import { clickhouse } from '../lib/clickhouse.js'
-import { log, logError } from '../lib/logger.js'
+import { logError } from '../lib/logger.js'
 
 export type TxMeta = {
     txHash: string

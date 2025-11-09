@@ -9,13 +9,16 @@ CREATE TABLE IF NOT EXISTS raw_events
     to_address String,
     value UInt256,
     block_time DateTime('UTC') DEFAULT toDateTime(0, 'UTC'),
-    _ingested_at DateTime('UTC') DEFAULT now()
+    _ingested_at DateTime('UTC') DEFAULT now(),
+    INDEX idx_from_address from_address TYPE set(0) GRANULARITY 1,
+    INDEX idx_to_address to_address TYPE set(0) GRANULARITY 1
 )
     ENGINE = ReplacingMergeTree(_ingested_at)
         PARTITION BY toYYYYMM(block_time)
         ORDER BY (tx_hash, log_index)
         TTL _ingested_at + INTERVAL 180 DAY DELETE
         SETTINGS index_granularity = 8192;
+
 
 CREATE TABLE IF NOT EXISTS tx_meta
 (
@@ -24,11 +27,12 @@ CREATE TABLE IF NOT EXISTS tx_meta
     block_time DateTime('UTC'),
     gas_used UInt64,
     effective_gas_price UInt256,
-    _ingested_at DateTime('UTC') DEFAULT now()
+    _ingested_at DateTime('UTC') DEFAULT now(),
+    INDEX idx_block_number block_number TYPE minmax GRANULARITY 1
 )
     ENGINE = ReplacingMergeTree(_ingested_at)
         PARTITION BY toYYYYMM(block_time)
-        ORDER BY (tx_hash)
+        ORDER BY tx_hash
         TTL _ingested_at + INTERVAL 180 DAY DELETE
         SETTINGS index_granularity = 8192;
 

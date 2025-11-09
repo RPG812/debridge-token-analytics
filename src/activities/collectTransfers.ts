@@ -42,9 +42,9 @@ export async function collectTransfersActivity(): Promise<void> {
         await collector.run()
 
         log('[collectTransfers] Completed successfully')
-    } catch (err) {
-        logError('[collectTransfers] Activity failed', err)
-        throw err
+    } catch (error) {
+        logError('[collectTransfers] Activity failed', error)
+        throw error
     }
 }
 
