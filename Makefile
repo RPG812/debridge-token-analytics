@@ -37,6 +37,11 @@ build-only:
 
 # Stop all containers but keep volumes
 down:
+	@if pgrep -f "src/worker.ts" >/dev/null; then \
+		echo "Stopping local Temporal worker gracefully..."; \
+		pkill -f "src/worker.ts"; \
+		sleep 2; \
+	fi
 	cd temporal && docker compose down
 	docker compose down
 	@echo "Containers stopped (volumes preserved)."
@@ -53,6 +58,12 @@ clean:
 logs:
 	docker compose logs -f
 
-# Start workflow manually inside the running container
-workflow:
+# Run workflow manually inside the running Docker container
+run:
 	@docker compose exec app sh -c "npm run workflow:start"
+
+# Run worker + workflow locally (Docker infra must be running)
+dev-run:
+	TEMPORAL_ADDRESS=localhost:7233 CLICKHOUSE_HOST=localhost npm run worker:start & \
+	sleep 5 && \
+	TEMPORAL_ADDRESS=localhost:7233 CLICKHOUSE_HOST=localhost npm run workflow:start

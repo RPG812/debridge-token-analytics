@@ -13,7 +13,7 @@ export async function collectTransfersActivity(): Promise<void> {
     try {
         const progress = await getProgress()
 
-        if (progress.count){
+        if (Number(progress.count)){
             log(`[collectTransfers] Already collected: ${progress.count} events`)
         }
 
