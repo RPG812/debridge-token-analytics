@@ -32,6 +32,7 @@ interface EnrichmentParams {
 class EnrichmentCollector {
     private readonly limiter: Limit
     private processed = 0
+    private readonly blockCache = new Map<bigint, Date>()
 
     constructor(private readonly params: EnrichmentParams) {
         this.limiter = pLimit(params.concurrency)
@@ -72,17 +73,24 @@ class EnrichmentCollector {
     private async enrichOne(hash: string): Promise<TxMeta> {
         try {
             const receipt = await getTxReceipt(hash as `0x${string}`)
-            const block = await getBlockByNumber(receipt.blockNumber)
+            const blockNumber = receipt.blockNumber
+            let blockTime = this.blockCache.get(blockNumber)
+
+            if (!blockTime) {
+                const block = await getBlockByNumber(blockNumber)
+
+                blockTime = new Date(Number(block.timestamp) * 1000)
+                this.blockCache.set(blockNumber, blockTime)
+            }
 
             return {
                 txHash: hash,
-                blockNumber: Number(receipt.blockNumber),
-                blockTime: new Date(Number(block.timestamp) * 1000),
+                blockNumber: Number(blockNumber),
+                blockTime,
                 gasUsed: receipt.gasUsed,
                 effectiveGasPrice: receipt.effectiveGasPrice
             }
         } catch (error) {
-            // Log and rethrow so Promise.allSettled marks as rejected
             logError(`[enrichWithReceipts] Failed to enrich tx ${hash}`, error)
             throw error
         }
