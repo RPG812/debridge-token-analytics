@@ -23,12 +23,12 @@ services:
       - debridge-net
 
   app:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./docker/Dockerfile
-    container_name: debridge-app
     restart: no
-    env_file: .env
+    env_file: .env.docker
     depends_on:
       clickhouse:
         condition: service_healthy

@@ -52,3 +52,7 @@ clean:
 # Stream logs from all services
 logs:
 	docker compose logs -f
+
+# Start workflow manually inside the running container
+workflow:
+	@docker compose exec app sh -c "npm run workflow:start"
