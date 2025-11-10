@@ -35,15 +35,13 @@ build-only:
 	docker compose build
 	@echo "Docker images built."
 
-# Stop all containers
+# Stop all containers without removing volumes or networks
 down:
-	@if pgrep -f "src/worker.ts" >/dev/null; then \
-		echo "Stopping local Temporal worker gracefully..."; \
-		pkill -f "src/worker.ts"; \
-		sleep 2; \
+	@echo "Stopping all running containers..."
+	@if [ -d temporal ]; then \
+		cd temporal && docker compose down --remove-orphans; \
 	fi
-	cd temporal && docker compose down
-	docker compose down
+	docker compose down --remove-orphans
 	@echo "Containers stopped."
 
 # Stop and remove all containers, networks, and volumes
