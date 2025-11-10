@@ -5,6 +5,7 @@ import { log, logError, logMetric } from '../lib/logger.js'
 import { sleep } from '../lib/sleep.js'
 import { Context } from '@temporalio/activity'
 import pLimit, { Limit } from 'p-limit'
+import {RateLimitError} from "../lib/error.js";
 
 /** Temporal activity entry point */
 export async function collectTransfersActivity(): Promise<void> {
@@ -63,29 +64,56 @@ class TransferCollector {
     private scannedFrom: bigint
     private scannedTo: bigint
     private readonly limiter: Limit
+    maxBlockStep: bigint
 
     constructor(private readonly params: CollectorParams) {
         this.cursor = params.startFrom
         this.scannedFrom = params.startFrom
         this.scannedTo = params.startFrom
+        this.maxBlockStep = params.blockStep * 2n
         this.limiter = pLimit(params.concurrency)
     }
 
     async run(): Promise<void> {
         const ctx = Context.current()
+        const minBlockStep = 1n
 
         while (this.collected < this.params.remaining && this.cursor > 0n) {
             const batch = this.buildBatch(this.cursor)
 
             if (!batch.length) break
 
-            const events = await this.collectBatch(batch)
+            let events: TransferEvent[] = []
+
+            try {
+                events = await this.collectBatch(batch)
+            } catch (error: any) {
+                if (error instanceof RateLimitError || error?.isRateLimit) {
+                    // Decrease block step adaptively, but not below minBlockStep
+                    this.params.blockStep = this.params.blockStep / 2n > minBlockStep
+                        ? this.params.blockStep / 2n
+                        : minBlockStep
+
+                    log(`[collectTransfers] Rate limited → blockStep ↓ to ${this.params.blockStep}`)
+                    await sleep(1000)
+                    continue
+                }
+
+                throw error
+            }
 
             if (events.length) {
                 await this.saveBatch(events)
-
                 this.collected += events.length
                 logMetric('events_inserted', events.length)
+
+                // Increase block step if too few events and we're below the max threshold
+                if (events.length < 10 && this.params.blockStep < this.maxBlockStep) {
+                    const nextStep = (this.params.blockStep * 3n) / 2n
+
+                    this.params.blockStep = nextStep <= this.maxBlockStep ? nextStep : this.maxBlockStep
+                    log(`[collectTransfers] Low event density, increase blockStep to ${this.params.blockStep}`)
+                }
             }
 
             ctx.heartbeat()
@@ -96,14 +124,12 @@ class TransferCollector {
 
             logMetric('total', this.collected)
 
-            await sleep(300)
-
             if (this.collected >= this.params.remaining) break
+
+            await sleep(300)
         }
 
-        log(
-            `[collectTransfers] Done. Collected=${this.collected}, scanned [${this.scannedFrom}..${this.scannedTo}]`
-        )
+        log(`[collectTransfers] Done. Collected=${this.collected}, scanned [${this.scannedFrom}..${this.scannedTo}]`)
     }
 
     /** Build up to N block ranges from the current cursor */
@@ -130,19 +156,50 @@ class TransferCollector {
     }
 
     /** Fetch and decode all events in a batch of ranges */
-    private async collectBatch(ranges: Array<{ fromBlock: bigint; toBlock: bigint }>): Promise<TransferEvent[]> {
+    private async collectBatch(
+        ranges: Array<{ fromBlock: bigint; toBlock: bigint }>
+    ): Promise<TransferEvent[]> {
+        const abortController = new AbortController()
+        let rateLimitTriggered = false
+
         const tasks = ranges.map(range =>
             this.limiter(async () => {
-                const logs = await getTransferLogs(range)
+                if (abortController.signal.aborted) return []
 
-                return mapLogsToEvents(logs, this.params.address)
+                try {
+                    const logs = await getTransferLogs(range, abortController.signal)
+
+                    return mapLogsToEvents(logs, this.params.address)
+                } catch (error: any) {
+                    if (error instanceof RateLimitError) {
+                        rateLimitTriggered = true
+                        abortController.abort()
+
+                        throw error
+                    }
+
+                    if (abortController.signal.aborted) {
+                        return []
+                    }
+
+                    throw error
+                }
             })
         )
 
-        const results = await Promise.all(tasks)
+        try {
+            const results = await Promise.all(tasks)
 
-        return results.flat()
+            return results.flat()
+        } catch (error: any) {
+            if (error instanceof RateLimitError || rateLimitTriggered) {
+                throw new RateLimitError()
+            }
+
+            throw error
+        }
     }
+
 
     private async saveBatch(events: TransferEvent[]) {
         if (!events.length) return

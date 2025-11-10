@@ -6,8 +6,8 @@ import {sleep} from "./sleep.js";
  */
 export async function withRetry<T>(
     fn: () => Promise<T>,
-    options: RetryOptions = {},
-    onError?: (error: unknown, attempt: number) => void
+    onError?: (error: unknown, attempt: number) => void,
+    options: RetryOptions = {}
 ): Promise<T> {
     const {
         attempts = 5,

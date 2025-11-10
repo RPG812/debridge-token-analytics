@@ -4,6 +4,7 @@ import { mainnet } from 'viem/chains'
 import { config } from '../config/index.js'
 import { withRetry } from './retry.js'
 import { logError } from './logger.js'
+import {RateLimitError} from "./error.js";
 
 if (!config.token?.contract) throw new Error('ERC-20 contract address is required')
 
@@ -66,7 +67,11 @@ export function createRpcClient() {
 }
 
 /** Fetch ERC-20 Transfer logs in a given block range */
-export async function getTransferLogs(range: BlockRange) {
+export async function getTransferLogs(range: BlockRange, signal?: AbortSignal) {
+    if (signal?.aborted) {
+        throw new Error('Aborted')
+    }
+
     try {
         return await withRetry(() =>
             publicClient.getLogs({
@@ -74,10 +79,25 @@ export async function getTransferLogs(range: BlockRange) {
                 event: transferEvent,
                 fromBlock: range.fromBlock,
                 toBlock: range.toBlock
-            })
+            }),
+            (error: any) => {
+                if (signal?.aborted) {
+                    throw new Error('Aborted')
+                }
+
+                const details = error?.details || ''
+
+                if (details.includes('query returned more than 10000 results')) {
+                    logError(`[getTransferLogs] Too many logs in [${range.fromBlock}-${range.toBlock}]`, error)
+                    throw new RateLimitError(details)
+                }
+            }
         )
     } catch (error) {
-        logError(`getTransferLogs failed after retries for [${range.fromBlock} - ${range.toBlock}]`, error)
+        if (!signal?.aborted) {
+            logError(`getTransferLogs failed after retries for [${range.fromBlock} - ${range.toBlock}]`, error)
+        }
+
         throw error
     }
 }
