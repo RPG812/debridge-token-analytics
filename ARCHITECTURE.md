@@ -11,7 +11,6 @@ All services run inside Docker containers and are managed through a unified **Ma
 **Core technologies:**  
 TypeScript • Temporal • ClickHouse • viem • Docker
 
----
 
 ## 2. System Architecture
 
@@ -59,7 +58,6 @@ The Ethereum RPC client is implemented with **viem**, using adaptive fallback be
 
 All network calls use the `withRetry` helper with exponential backoff and jitter for resilience.
 
----
 
 ## 3. Data Model (ClickHouse)
 
@@ -87,7 +85,6 @@ Key points:
 - The schema separates raw event data (`raw_events`) and enriched metadata (`tx_meta`) for efficient joins.
 - `daily_metrics` is built using ClickHouse window functions (`OVER (...)`) for MA7 and cumulative calculations.
 
----
 ## 4. Operational Resilience
 
 ### Reliability and Idempotency
