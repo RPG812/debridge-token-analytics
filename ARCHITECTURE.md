@@ -118,3 +118,4 @@ Several areas remain open for future enhancement:
 - **Testing Coverage** — extend integration and unit tests, especially for metrics aggregation and ClickHouse queries.
 - **Optional FX Conversion** — implement ETH to USDC conversion for daily totals.
 - **Workflow Parallelization** — optional optimization: split analytics by block ranges or token addresses to run multiple workflows concurrently.
+- **Make Commands** — add one-command startup for worker and workflow in production.
