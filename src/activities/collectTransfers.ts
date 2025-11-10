@@ -94,7 +94,7 @@ class TransferCollector {
                         ? this.params.blockStep / 2n
                         : minBlockStep
 
-                    log(`[collectTransfers] Rate limited → blockStep ↓ to ${this.params.blockStep}`)
+                    log(`[collectTransfers] Rate limited, blockStep decrease to ${this.params.blockStep}`)
                     await sleep(1000)
                     continue
                 }

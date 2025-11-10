@@ -57,12 +57,6 @@ make run-workflow
 The workflow will execute four activities in sequence (data collection, enrichment, aggregation, and export).
 Each activity is idempotent and safely handles retries and restarts.
 
-After successful completion, analytics will be written to:
-
-```b
-.output/analytics.json
-```
-
 ### Local Run (recommended for Apple Silicon)
 
 If running on Apple Silicon (M1/M2/M3) use the local runner:
@@ -161,7 +155,3 @@ based on the exported analytics data.
 ![Cumulative Gas Cost](./screenshots/CumulativeGasCost.png)
 
 </details>
-
-### License
-
-MIT License.
