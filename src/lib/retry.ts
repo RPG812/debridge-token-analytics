@@ -21,7 +21,7 @@ export async function withRetry<T>(
     for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
             return await fn()
-        } catch (error) {
+        } catch (error: any) {
             lastError = error
 
             if (onError) {
@@ -30,7 +30,8 @@ export async function withRetry<T>(
 
             if (attempt === attempts) break
 
-            const delay = calcDelay(attempt, baseDelayMs, maxDelayMs, jitter)
+            const isRateLimited = error?.status === 429 || error?.details?.includes('Too Many Requests')
+            const delay = calcDelay(attempt, isRateLimited ? maxDelayMs : baseDelayMs, maxDelayMs, jitter)
             await sleep(delay)
         }
     }
