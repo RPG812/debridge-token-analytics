@@ -2,11 +2,14 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export const config = {
-    rpcUrl: process.env.RPC_URL || '',
+    rpc: {
+        alchemy: process.env.RPC_ALCHEMY || '',
+        infura: process.env.RPC_INFURA || ''
+    },
     address: process.env.ADDRESS || '',
     targetEvents: Number(process.env.TARGET_EVENTS || 5000),
     blockStep: Number(process.env.BLOCK_STEP || 100),
-    batchSize: Number(process.env.BATCH_SIZE || 100),
+    batchSize: Number(process.env.BATCH_SIZE || 50),
     rpcConcurrency: Number(process.env.RPC_CONCURRENCY || 5),
 
     token: {
@@ -35,22 +38,10 @@ export const config = {
     })(),
 
     temporal: (() => {
-        const address = process.env.TEMPORAL_ADDRESS || 'localhost:7233'
-        const taskQueue = process.env.TEMPORAL_TASK_QUEUE || 'token-analytics'
-        const activityTimeout = process.env.ACTIVITY_TIMEOUT || '2 hours'
-
-        const retry = {
-            initialInterval: process.env.RETRY_INITIAL || '2s',
-            backoffCoefficient: Number(process.env.RETRY_BACKOFF || 2.0),
-            maximumInterval: process.env.RETRY_MAX_INTERVAL || '1m',
-            maximumAttempts: Number(process.env.RETRY_MAX_ATTEMPTS || 5)
-        }
-
         return {
-            address,
-            taskQueue,
-            activityTimeout,
-            retry
+            address: process.env.TEMPORAL_ADDRESS || 'localhost:7233',
+            taskQueue: process.env.TEMPORAL_TASK_QUEUE || 'token-analytics',
+            activityTimeout: process.env.ACTIVITY_TIMEOUT || '2 hours'
         }
     })()
 }

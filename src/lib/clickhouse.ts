@@ -14,8 +14,8 @@ export const testClickhouseConnection = async () => {
         const res = await clickhouse.query({ query: 'SELECT version()' })
         const text = await res.text()
         log(`Connected to ClickHouse ${config.clickhouse.url}. Version: ${text.trim()}`)
-    } catch (err) {
-        logError('Failed to connect to ClickHouse', err)
+    } catch (error) {
+        logError('Failed to connect to ClickHouse', error)
         process.exit(1)
     }
 }
