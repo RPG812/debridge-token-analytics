@@ -20,5 +20,3 @@ COPY .env.docker ./.env.docker
 RUN npm rebuild @swc/core --build-from-source \
     && npm rebuild @temporalio/core-bridge --build-from-source \
     && npm run build || true
-
-CMD ["sh", "-c", "until nc -z temporal 7233; do echo '⏳ Waiting for Temporal...'; sleep 3; done && echo '✅ Temporal is up, starting worker...' && npm run worker:start"]

@@ -19,6 +19,15 @@ async function runWorker() {
 
     log(`✅ Temporal Worker started on task queue "${config.temporal.taskQueue}"`)
 
+    const shutdown = async () => {
+        log('[worker] Caught termination signal. Shutting down gracefully...')
+        worker.shutdown()
+        process.exit(0)
+    }
+
+    process.on('SIGINT', shutdown)
+    process.on('SIGTERM', shutdown)
+
     await worker.run()
 }
 
