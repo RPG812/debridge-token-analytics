@@ -1,13 +1,3 @@
-#To run locally on Apple M1/M2/M3 — uncomment the section below
-#FROM node:20-alpine
-#WORKDIR /app
-#COPY package*.json ./
-#RUN npm ci
-#COPY . .
-#RUN npm run build || true
-#CMD ["npm", "run", "dev"]
-
-# To run on Linux or GitHub Codespaces — uncomment the section below
 FROM --platform=linux/amd64 node:20-bullseye
 
 WORKDIR /app
