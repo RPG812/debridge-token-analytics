@@ -35,7 +35,7 @@ build-only:
 	docker compose build
 	@echo "Docker images built."
 
-# Stop all containers but keep volumes
+# Stop all containers
 down:
 	@if pgrep -f "src/worker.ts" >/dev/null; then \
 		echo "Stopping local Temporal worker gracefully..."; \
@@ -44,7 +44,7 @@ down:
 	fi
 	cd temporal && docker compose down
 	docker compose down
-	@echo "Containers stopped (volumes preserved)."
+	@echo "Containers stopped."
 
 # Stop and remove all containers, networks, and volumes
 clean:
@@ -58,8 +58,20 @@ clean:
 logs:
 	docker compose logs -f
 
-# Run workflow manually inside the running Docker container
-run:
+# Run worker (waits for Temporal inside the container)
+run-worker:
+	@echo "Waiting for Temporal to become available..."
+	@docker compose exec app sh -c '\
+		until nc -z temporal 7233; do \
+			echo "Waiting for Temporal..."; \
+			sleep 3; \
+		done; \
+		echo "Temporal is up, starting worker..."; \
+		npm run worker:start \
+	'
+
+# Run workflow after worker is ready
+run-workflow:
 	@docker compose exec app sh -c "npm run workflow:start"
 
 # Run worker + workflow locally (Docker infra must be running)
