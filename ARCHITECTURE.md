@@ -112,6 +112,7 @@ make clean         # remove all containers and networks
 The current implementation focuses on the core data pipeline, orchestration, and analytical logic.  
 Several areas remain open for future enhancement:
 
+- **Startup & Shutdown** — improve initialization and graceful shutdown sequence for Temporal worker and workflow processes.
 - **Monitoring & Metrics** — add Prometheus / OpenTelemetry instrumentation for activity latency, RPC retries, and workflow metrics.
 - **Centralized Error Handling** — improve centralized exception handling and structured logging across all workflow activities.
 - **ARM Compatibility** — resolve build issues for `@temporalio/core-bridge` on Apple Silicon (M1–M3).
