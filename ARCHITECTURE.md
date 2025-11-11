@@ -40,9 +40,8 @@ The main entry point is `analyticsWorkflow`, which runs four sequential activiti
    Reads aggregated data from ClickHouse, builds a structured JSON, and writes it to `./output/analytics.json`.  
 
 
-
 ### Data Layer (ClickHouse)
-Data is stored in three optimized **ReplacingMergeTree** tables with time-based partitions and a 180-day TTL:
+The system stores three logical datasets optimized for analytical workloads:
 
 - `raw_events` — decoded ERC-20 transfers
 - `tx_meta` — transaction-level metadata (gas, price, block time)
@@ -52,9 +51,7 @@ Aggregations use ClickHouse **window functions** for MA7 and cumulative sums.
 
 
 ### RPC Layer
-The Ethereum RPC client is implemented with **viem**, using adaptive fallback between  
-[Alchemy](https://www.alchemy.com/) (faster for transaction parsing) and  
-[Infura](https://www.infura.io/) (more stable for block scanning).
+The Ethereum RPC client is implemented with **viem**, using adaptive fallback between [Alchemy](https://www.alchemy.com/) and [Infura](https://www.infura.io/).
 
 All network calls use the `withRetry` helper with exponential backoff and jitter for resilience.
 
