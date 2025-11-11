@@ -128,8 +128,6 @@ The example below illustrates the structure of the exported analytics data file 
 }
 ```
 
-The full json is available in [.output/analytics.json](./output/analytics.json).
-
 ### Visualization
 
 Interactive charts were built using [Vega-Lite](https://vega.github.io/editor/)  
