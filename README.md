@@ -31,16 +31,17 @@ Start all required services (Temporal, ClickHouse, and the application):
 ```bash
 make up
 ```
+  
+After the first make up, wait until all containers are initialized.
+  
+Then run:
+```bash
+make up 
+```
 
-This will:
+once more to ensure the application container is fully started before launching the worker.
 
-- create a shared Docker network,
-
-- start the Temporal server,
-
-- start ClickHouse and the application container.
-
-After startup is complete, open another terminal and run:
+After startup is complete, run:
 
 ```bash
 make run-worker
