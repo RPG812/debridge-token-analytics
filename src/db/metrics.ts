@@ -71,7 +71,7 @@ export async function computeAndInsertMetrics(): Promise<void> {
                      sum(toUInt256(m.gas_used) * m.effective_gas_price) AS gas_cost_wei,
                      sum((toUInt256(m.gas_used) * m.effective_gas_price) / 1e18) AS gas_cost_eth,
                      avg(m.effective_gas_price) AS avg_gas_price_wei
-                 FROM raw_events AS e
+                 FROM (SELECT DISTINCT tx_hash FROM raw_events) AS e
                           INNER JOIN tx_meta AS m USING (tx_hash)
                  GROUP BY date
                  ) AS daily_base

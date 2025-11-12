@@ -61,7 +61,6 @@ export async function getProgress(): Promise<EventsProgress> {
         const res = await clickhouse.query({ query, format: 'JSONEachRow' })
         const rows = (await res.json()) as ProgressRow[]
 
-
         if (rows.length === 0) {
             return { minBlock: null, maxBlock: null, count: 0 }
         }

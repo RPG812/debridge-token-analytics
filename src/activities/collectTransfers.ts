@@ -200,7 +200,6 @@ class TransferCollector {
         }
     }
 
-
     private async saveBatch(events: TransferEvent[]) {
         if (!events.length) return
 
